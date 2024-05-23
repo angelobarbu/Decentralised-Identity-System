@@ -10,12 +10,16 @@ const getBlockchain = () =>
           await window.ethereum.enable();
           const networkId = await web3.eth.net.getId();
           const deployedNetwork = Identity.networks[networkId];
-          const contract = new web3.eth.Contract(
-            Identity.abi,
-            deployedNetwork && deployedNetwork.address,
-          );
-          const accounts = await web3.eth.getAccounts();
-          resolve({ web3, contract, accounts });
+          if (deployedNetwork) {
+            const contract = new web3.eth.Contract(
+              Identity.abi,
+              deployedNetwork && deployedNetwork.address,
+            );
+            const accounts = await web3.eth.getAccounts();
+            resolve({ web3, contract, accounts });
+          } else {
+            reject('Contract not deployed on the detected network.');
+          }
         } catch (error) {
           reject(error);
         }
