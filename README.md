@@ -30,9 +30,8 @@ npm install
 
 - Compile and migrate smart contracts:
 ```
-npm install
-cd client
-npm install
+truffle compile
+truffle migrate --reset
 ```
 
 - Start the React application:
