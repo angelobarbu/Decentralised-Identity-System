@@ -8,16 +8,27 @@ contract Identity {
         bool valid;
     }
 
+
+
     mapping(address => Credential[]) public credentials;
+
 
     event CredentialIssued(address indexed user, address indexed issuer, string dataHash);
     event CredentialRevoked(address indexed user, address indexed issuer, string dataHash);
+
+
+
+    function getCredentials(address user) public view returns (Credential[] memory) {
+        return credentials[user];
+    }
+
 
     function issueCredential(address user, string memory dataHash) public {
         require(!credentialExists(user, dataHash), "Credential already exists");
         credentials[user].push(Credential(msg.sender, dataHash, true));
         emit CredentialIssued(user, msg.sender, dataHash);
     }
+
 
     function verifyCredential(address user, string memory dataHash) public view returns (bool) {
         for (uint i = 0; i < credentials[user].length; i++) {
@@ -27,6 +38,7 @@ contract Identity {
         }
         return false;
     }
+
 
     function revokeCredential(address user, string memory dataHash) public {
         bool credentialFound = false;
@@ -42,6 +54,7 @@ contract Identity {
         }
         require(credentialFound, "Credential not found");
     }
+
 
     function credentialExists(address user, string memory dataHash) internal view returns (bool) {
         for (uint i = 0; i < credentials[user].length; i++) {
