@@ -1,15 +1,30 @@
+const fs = require('fs-extra');
+const path = require('path');
 const Identity = artifacts.require("Identity");
-const { exec } = require('child_process');
+
+
+const srcFile = path.resolve(__dirname, '../build/contracts/Identity.json');
+const abiFileName = 'Identity.json';
+
+const frontendDestDir = path.resolve(__dirname, '../../frontend/src/contracts');
+const backendDestDir = path.resolve(__dirname, '../../backend/src/contracts');
+
+
+function copyAbiToDir(destDir) {
+  const destFile = path.resolve(destDir, abiFileName);
+
+  fs.ensureDirSync(destDir); // Ensure the destination directory exists
+  fs.copyFileSync(srcFile, destFile); // Copy the file
+  console.log(`ABI copied to ${destFile}`);
+}
+
 
 module.exports = function(deployer) {
   deployer.deploy(Identity).then(() => {
-    exec('node copy-abi.js', (err, stdout, stderr) => {
-      if (err) {
-        console.error(`Error executing script: ${err}`);
-        return;
-      }
-      console.log(stdout);
-      console.error(stderr);
-    });
+    // Copy ABI to frontend/src/contracts
+    copyAbiToDir(frontendDestDir);
+
+    // Copy ABI to backend/src/contracts
+    copyAbiToDir(backendDestDir);
   });
 };

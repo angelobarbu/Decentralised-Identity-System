@@ -11,30 +11,239 @@ body {
   height: 100vh;
 }
 
-.container {
+.login-container {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  max-width: 500px;
+  padding: 30px;
+  max-width: 650px;
+  width: 100%;
   text-align: center;
+  position: relative;
 }
 
-button {
-  width: 80%;
+/* Login Screen Title */
+.login-container h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Connect Button */
+.connect-button {
+  width: 100%;
   padding: 10px;
-  margin: 10px 0;
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  color: #ffffff;
-  background-color: #0056b3;
+  border-radius: 6px;
+  font-size: 18px;
+  color: white;
+  background-color: #007bff;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
-button:hover {
-  background-color: #003d80;
+.connect-button:hover {
+  background-color: #0056b3;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  max-width: 650px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+/* Top Section: Account + MetaMask */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px; /* More distance between header and identities */
+}
+
+/* Account Display */
+.account-info {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Adjust spacing */
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+  background: #f1f1f1;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* Account Address Styling */
+.account-address {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0056b3;
+  background: white;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+/* MetaMask Status + Disconnect */
+.meta-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 140px; /* Ensure same width for alignment */
+}
+
+/* MetaMask Connected Status */
+.metamask-status {
+  background: #28a745;
+  color: white;
+  padding: 6px 0;
+  text-align: center;
+  width: 100%; /* Same width as Disconnect */
+  border-radius: 4px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Disconnect Button */
+.disconnect-btn {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 6px 0;
+  text-align: center;
+  width: 100%; /* Same width as MetaMask status */
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.disconnect-btn:hover {
+  background: #c9302c;
+}
+
+/* Identities Section */
+.identities-container {
+  margin-top: 50px; /* Increased margin for better spacing */
+  text-align: left;
+}
+
+/* Identities Header */
+.identities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Identities Title */
+.identities-header h2 {
+  margin: 0;
+}
+
+/* Add Identity Button */
+.add-identity-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  font-size: 22px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-identity-btn:hover {
+  background: #0056b3;
+}
+
+/* Identity List */
+.identity-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+.identity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+}
+
+.identity-name {
+  flex: 1;
+  font-weight: bold;
+}
+
+/* Identity Actions */
+.identity-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.view-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.view-btn:hover {
+  background: #218838;
+}
+
+.revoke-btn {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.revoke-btn:hover {
+  background: #c9302c;
+}
+
+/* No Identities Message */
+.no-identities {
+  text-align: center;
+  font-style: italic;
+  color: #777;
+}
+
+/* Notification System */
+.notification-container {
+  position: fixed;
+  bottom: 10px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification {
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: white;
+}
+
+.notification.success {
+  background: #28a745;
+}
+
+.notification.error {
+  background: #d9534f;
 }
 
 /* Modal */
@@ -50,25 +259,138 @@ button:hover {
   align-items: center;
 }
 
+.unselectable {
+  pointer-events: none;
+  user-select: none;
+  background-color: #f4f4f4;
+  color: #555;
+  border: 1px solid #ccc;
+}
+
+
 .modal-content {
   background: white;
-  padding: 20px;
+  padding: 25px;
   border-radius: 8px;
-  max-width: 400px;
+  max-width: 300px;
   width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-input {
-  width: 80%;
-  padding: 8px;
-  margin: 5px 0;
-  border: 1px solid #0056b3;
+/* Form Title */
+.modal-content h2 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
-.close {
-  background: red;
+/* Form Fields */
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  padding-right: 0px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+/* Buttons Container */
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* Submit Button */
+.submit-btn {
+  background: #007bff;
   color: white;
   border: none;
-  padding: 10px;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 16px;
+  width: 48%;
+  transition: background 0.3s;
+}
+
+.submit-btn:hover {
+  background: #0056b3;
+}
+
+/* Close Button */
+.close-btn {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 48%;
+  transition: background 0.3s;
+}
+
+.close-btn:hover {
+  background: #c9302c;
+}
+
+/* Status Message */
+.status-message {
+  font-size: 14px;
+  color: #555;
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* Popup Buttons Container */
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Revoke Button Style */
+.confirm-revoke-btn {
+  background-color: #d9534f;  /* Red color for warning */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.confirm-revoke-btn:hover {
+  background-color: #c9302c;  /* Darker red on hover */
+  transform: scale(1.05);     /* Slight zoom on hover */
+}
+
+.confirm-revoke-btn:active {
+  transform: scale(0.95);     /* Button press effect */
+}
+
+/* Cancel Button Style */
+.cancel-btn {
+  background-color: #6c757d;  /* Gray color for neutral action */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #5a6268;  /* Darker gray on hover */
+  transform: scale(1.05);     /* Slight zoom on hover */
+}
+
+.cancel-btn:active {
+  transform: scale(0.95);     /* Button press effect */
 }

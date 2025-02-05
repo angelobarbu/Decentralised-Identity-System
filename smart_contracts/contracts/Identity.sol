@@ -15,6 +15,9 @@ contract Identity {
     event CredentialRevalidated(address indexed user, address indexed issuer, string dataHash);
 
     function getCredentials(address user) public view returns (Credential[] memory) {
+        if (credentials[user].length == 0) {
+            return new Credential[](0);
+        }
         return credentials[user];
     }
 

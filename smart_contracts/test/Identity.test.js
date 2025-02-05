@@ -6,15 +6,67 @@ const path = require('path');
 contract("Identity", (accounts) => {
   const [issuer, user, anotherUser] = accounts;
 
+  let instance;
+
+  beforeEach(async () => {
+    instance = await Identity.new();  // Fresh contract deployment
+  });
+
+  it("should return an empty array when no credentials exist", async () => {
+    const credentials = await instance.getCredentials.call(anotherUser);
+    assert.isArray(credentials, "The result should be an array");
+    assert.equal(credentials.length, 0, "The array should be empty");
+  });
+  
+  it("should return credentials after issuance", async () => {
+    // Issue a credential
+    await instance.issueCredential(user, "hash789", false, { from: issuer });
+  
+    // Fetch credentials
+    const credentials = await instance.getCredentials.call(user);
+    assert.isArray(credentials, "The result should be an array");
+    assert.equal(credentials.length, 1, "The array should contain one credential");
+    
+    // Verify the credential details
+    assert.equal(credentials[0].issuer, issuer, "Issuer should match");
+    assert.equal(credentials[0].dataHash, "hash789", "Data hash should match");
+    assert.isTrue(credentials[0].valid, "Credential should be valid");
+  });
+  
+  it("should reflect revoked credentials as invalid", async () => {  
+    // Issue a credential and revoke it
+    await instance.issueCredential(user, "hashToRevoke", false, { from: issuer });
+    await instance.revokeCredential(user, "hashToRevoke", { from: issuer });
+  
+    // Fetch credentials
+    const credentials = await instance.getCredentials.call(user);
+    const revokedCredential = credentials.find(cred => cred.dataHash === "hashToRevoke");
+  
+    assert.isDefined(revokedCredential, "Revoked credential should exist");
+    assert.isFalse(revokedCredential.valid, "Revoked credential should be invalid");
+  });
+  
+  it("should handle multiple credentials for the same user", async () => {
+    // Issue multiple credentials
+    await instance.issueCredential(user, "hash001", false, { from: issuer });
+    await instance.issueCredential(user, "hash002", false, { from: issuer });
+  
+    // Fetch credentials
+    const credentials = await instance.getCredentials.call(user);
+    assert.equal(credentials.length, 2, "User should have two credentials");
+  
+    const dataHashes = credentials.map(cred => cred.dataHash);
+    assert.includeMembers(dataHashes, ["hash001", "hash002"], "Both hashes should be present");
+  });
+
   it("should issue a credential", async () => {
-    const instance = await Identity.deployed();
     await instance.issueCredential(user, "hash123", false, { from: issuer });
     const isValid = await instance.verifyCredential.call(user, "hash123");
     assert.isTrue(isValid, "Credential should be valid");
   });
 
   it("should revalidate an invalid credential", async () => {
-    const instance = await Identity.deployed();
+    await instance.issueCredential(user, "hash123", false, { from: issuer }); // Issue first
     await instance.revokeCredential(user, "hash123", { from: issuer });
     let isValid = await instance.verifyCredential.call(user, "hash123");
     assert.isFalse(isValid, "Credential should be revoked");
@@ -25,7 +77,7 @@ contract("Identity", (accounts) => {
   });
 
   it("should not issue duplicate credentials if valid", async () => {
-    const instance = await Identity.deployed();
+    await instance.issueCredential(user, "hash123", false, { from: issuer }); // Issue first
     try {
       await instance.issueCredential(user, "hash123", false, { from: issuer });
       assert.fail("Expected error not received");
@@ -35,20 +87,22 @@ contract("Identity", (accounts) => {
   });
 
   it("should verify a credential", async () => {
-    const instance = await Identity.deployed();
+    await instance.issueCredential(user, "hash123", false, { from: issuer }); // Issue credential
+
     const isValid = await instance.verifyCredential.call(user, "hash123");
     assert.isTrue(isValid, "Credential should be valid");
   });
 
   it("should revoke a credential", async () => {
-    const instance = await Identity.deployed();
+    await instance.issueCredential(user, "hash123", false, { from: issuer }); // Issue first
+
     await instance.revokeCredential(user, "hash123", { from: issuer });
     const isValid = await instance.verifyCredential.call(user, "hash123");
     assert.isFalse(isValid, "Credential should be revoked");
   });
 
   it("should not revoke a non-existent credential", async () => {
-    const instance = await Identity.deployed();
+
     try {
       await instance.revokeCredential(user, "nonExistentHash", { from: issuer });
       assert.fail("Expected error not received");
@@ -58,7 +112,9 @@ contract("Identity", (accounts) => {
   });
 
   it("should not revoke a credential by a non-issuer", async () => {
-    const instance = await Identity.deployed();
+    // const instance = await Identity.deployed();
+    instance = await Identity.deployed()
+
     await instance.issueCredential(user, "hash456", false, { from: issuer });
     try {
       await instance.revokeCredential(user, "hash456", { from: anotherUser });
@@ -70,7 +126,6 @@ contract("Identity", (accounts) => {
 
   it("should handle load test for issuing, verifying, and revoking credentials", async function () {
     this.timeout(300000);
-    const instance = await Identity.deployed();
     const numOperations = 100;
     const issueTimes = [];
     const verifyTimes = [];
