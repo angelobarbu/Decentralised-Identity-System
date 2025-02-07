@@ -19,7 +19,7 @@ class IdentityController {
 
   async issueCredential(req, res, next) {
     try {
-      const { userAddress, firstName, lastName, dob, nationality, idNumber } = req.body;
+      const { userAddress, firstName, lastName, dob, nationality, idNumber, revalidate } = req.body;
 
       console.log("Received request to issue identity for user:", 
         userAddress,
@@ -27,7 +27,8 @@ class IdentityController {
         lastName,
         dob,
         nationality,
-        idNumber
+        idNumber,
+        revalidate
       );
 
       const result = await IdentityService.issueCredential({
@@ -37,6 +38,7 @@ class IdentityController {
         dob,
         nationality,
         idNumber,
+        revalidate,
       });
 
       res.json({ success: true, message: result.message });

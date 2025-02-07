@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import "./App.css";
 
@@ -9,24 +9,36 @@ const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false,
   const [nationality, setNationality] = useState(identity.nationality || "");
   const [idNumber, setIdNumber] = useState(identity.idNumber || "");
   const [status, setStatus] = useState("");
+  const [revalidatePopup, setRevalidatePopup] = useState({ show: false, formData: null });
 
-  const issueIdentity = async () => {
+  const issueIdentity = async (revalidate = false) => {
     try {
-      const formData = new FormData();
-      formData.append("userAddress", account);
-      formData.append("firstName", firstName);
-      formData.append("lastName", lastName);
-      formData.append("dob", dob);
-      formData.append("nationality", nationality);
-      formData.append("idNumber", idNumber);
+      const formData = {
+        userAddress: account,
+        firstName,
+        lastName,
+        dob,
+        nationality,
+        idNumber,
+        revalidate
+      };
 
-      const response = await axios.post("http://localhost:5001/identity/issue-identity", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      console.log("Issuing identity:", formData);
 
-      setStatus(response.data.message);
+      const response = await axios.post("http://localhost:5001/identity/issue-identity", formData);
+
+      console.log("Identity issued:", response.data, response.data.revalidationRequired);
+
+      if (response.data.message === "Credential exists but is revoked. Set revalidate to true to revalidate it.") {
+        // Show the revalidation popup if required
+        setRevalidatePopup({ show: true, formData });
+        return;
+      }
+
+      setStatus("Identity issued successfully!");
       onSuccess("Identity issued successfully!");
       onClose();
+
     } catch (error) {
       setStatus("Error issuing identity.");
     }
@@ -78,11 +90,25 @@ const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false,
         />
 
         <div className="form-buttons">
-          {!readOnly && <button className="submit-btn" onClick={issueIdentity}>Submit</button>}
+          {!readOnly && <button className="submit-btn" onClick={() => issueIdentity(false)}>Submit</button>}
           <button className="close-btn" onClick={onClose}>Close</button>
         </div>
 
         {status && <p className="status-message">{status}</p>}
+
+        {/* Revalidation Popup */}
+        {revalidatePopup.show && (
+          <div className="modal">
+            <div className="modal-content">
+              <h2>Identity Already Exists</h2>
+              <p>The identity <strong>{revalidatePopup.formData.firstName} {revalidatePopup.formData.lastName}</strong> was previously revoked. Do you want to revalidate it?</p>
+              <div className="popup-buttons">
+                <button className="confirm-revalidate-btn" onClick={() => issueIdentity(true)}>Revalidate</button>
+                <button className="cancel-btn" onClick={() => setRevalidatePopup({ show: false, formData: null })}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
