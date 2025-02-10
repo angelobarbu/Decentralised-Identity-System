@@ -1,0 +1,6 @@
+# ganache files
+.ganache-db/
+.ganache-mnemonic.txt
+
+# environment file
+.env
