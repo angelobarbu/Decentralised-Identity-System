@@ -25,3 +25,6 @@ yarn-error.log*
 
 # environment variables
 .env
+
+# contract ABI
+/src/contracts

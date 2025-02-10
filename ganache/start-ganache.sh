@@ -4,9 +4,6 @@
 GANACHE_DB=".ganache-db"
 MNEMONIC_FILE=".ganache-mnemonic.txt"
 
-# Ensure the database directory exists
-mkdir -p "$GANACHE_DB"
-
 # Load the mnemonic if it exists; otherwise, use the default one
 if [ -f "$MNEMONIC_FILE" ]; then
     mnemonic=$(cat "$MNEMONIC_FILE")
