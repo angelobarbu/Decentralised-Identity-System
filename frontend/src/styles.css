@@ -334,6 +334,7 @@ body {
   width: 100%;
   margin: 8px 0;
   font-size: 16px;
+  text-align: left !important;
 }
 
 .modal-content.select-dropdown > div {
@@ -341,6 +342,20 @@ body {
   border: 1px solid #ccc;
   padding: 10px;
   padding-right: 0px;
+  font-size: 16px;
+}
+
+/* Ensure text in dropdowns is left-aligned */
+.modal-content .select-dropdown .css-1uccc91-singleValue {
+  text-align: left !important;
+}
+
+/* Ensure dropdown width remains consistent */
+.select-dropdown .css-1s2u09g-control {
+  width: 100% !important;
+  text-align: left !important;
+  padding: 8px !important;
+  border-radius: 6px;
   font-size: 16px;
 }
 

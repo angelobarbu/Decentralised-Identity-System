@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { fetchIdentities, revokeIdentity } from "../services/identityService";
 import IdentityForm from "./IdentityForm";
-import "./App.css";
+import { showNotification } from "../utils/notifications";
+import "../styles.css";
+
 
 const Dashboard = ({ contract, accounts, disconnectWallet }) => {
   const [identities, setIdentities] = useState([]);
@@ -21,74 +23,48 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
 
   const loadIdentities = async (userAccounts) => {
     try {
-      console.log("Fetching all identities for accounts:", userAccounts);
-      const queryParams = userAccounts.map(acc => `accounts[]=${encodeURIComponent(acc)}`).join("&");
-      const response = await axios.get(`http://localhost:5001/identity/get-all-identities?${queryParams}`);
-
-      const formattedIdentities = response.data.credentials.flatMap((accountData, index) =>
-        accountData.map(cred => ({ ...cred, userAddress: userAccounts[index] }))
-      );
-
-      console.log("Identities:", formattedIdentities);
-      setIdentities(formattedIdentities);
-      setFilteredIdentities(formattedIdentities);
+      const data = await fetchIdentities(userAccounts);
+      setIdentities(data);
+      setFilteredIdentities(data);
     } catch (error) {
-      showNotification("Error fetching identities.", "error");
+      showNotification(setNotifications, "Error fetching identities.", "error");
     }
   };
 
-  // Toggle account selection
   const toggleAccountSelection = (account) => {
     const updatedSelection = selectedAccounts.includes(account)
-      ? selectedAccounts.filter(acc => acc !== account) // Remove account if already selected
-      : [...selectedAccounts, account]; // Add account if not selected
+      ? selectedAccounts.filter(acc => acc !== account)
+      : [...selectedAccounts, account];
 
     setSelectedAccounts(updatedSelection);
     updateFilteredIdentities(updatedSelection);
   };
 
   const updateFilteredIdentities = (activeAccounts) => {
-    if (activeAccounts.length === 0) {
-      setFilteredIdentities([]);
-    } else {
-      setFilteredIdentities(identities.filter(identity => activeAccounts.includes(identity.userAddress)));
-    }
+    setFilteredIdentities(activeAccounts.length > 0
+      ? identities.filter(identity => activeAccounts.includes(identity.userAddress))
+      : []);
   };
 
   const confirmRevoke = (identity) => {
     setRevokePopup({ show: true, identity });
   };
 
-  const revokeIdentity = async () => {
+  const revokeIdentityHandler = async () => {
     try {
       const { identity } = revokePopup;
-      await axios.post("http://localhost:5001/identity/revoke-identity", {
-        userAddress: identity.userAddress,
-        firstName: identity.firstName,
-        lastName: identity.lastName,
-        dob: identity.dob,
-        nationality: identity.nationality,
-        idNumber: identity.idNumber,
-      });
-      showNotification(`Identity for ${identity.firstName} ${identity.lastName} revoked successfully.`, "success");
+      await revokeIdentity(identity);
+      showNotification(setNotifications, `Identity ${identity.firstName} ${identity.lastName} revoked successfully!`, "success");
       loadIdentities(accounts);
     } catch (error) {
-      showNotification("Error revoking identity.", "error");
+      showNotification(setNotifications, "Error revoking identity.", "error");
     } finally {
       setRevokePopup({ show: false, identity: null });
     }
   };
 
-  const showNotification = (message, type) => {
-    const id = Date.now();
-    setNotifications((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((notif) => notif.id !== id));
-    }, 3000);
-  };
-
   const handleIdentitySuccess = (message) => {
-    showNotification(message, "success");
+    showNotification(setNotifications, message, "success");
     loadIdentities(accounts);
   };
 
@@ -164,7 +140,7 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
             <h2>Confirm Revocation</h2>
             <p>Are you sure you want to revoke the identity for <strong>{revokePopup.identity.firstName} {revokePopup.identity.lastName}</strong>?</p>
             <div className="popup-buttons">
-              <button className="confirm-revoke-btn" onClick={revokeIdentity}>Revoke</button>
+              <button className="confirm-revoke-btn" onClick={revokeIdentityHandler}>Revoke</button>
               <button className="cancel-btn" onClick={() => setRevokePopup({ show: false, identity: null })}>Cancel</button>
             </div>
           </div>
@@ -172,12 +148,15 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
       )}
 
       <div className="notification-container">
-        {notifications.map((notif) => (
-          <div key={notif.id} className={`notification ${notif.type}`}>
-            {notif.message}
-          </div>
-        ))}
+        {Array.isArray(notifications) && notifications.length > 0 ? (
+          notifications.map((notif) => (
+            <div key={notif.id} className={`notification ${notif.type}`}>
+              {notif.message}
+            </div>
+          ))
+        ) : null}
       </div>
+
     </div>
   );
 };
