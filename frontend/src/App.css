@@ -67,27 +67,51 @@ body {
   margin-bottom: 30px; /* More distance between header and identities */
 }
 
-/* Account Display */
-.account-info {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Adjust spacing */
-  font-size: 14px;
-  font-weight: bold;
-  color: #555;
-  background: #f1f1f1;
-  padding: 8px 12px;
-  border-radius: 6px;
+/* Accounts List */
+.account-selection {
+  text-align: left;
 }
 
-/* Account Address Styling */
-.account-address {
-  font-size: 16px;
+.account-label {
   font-weight: bold;
-  color: #0056b3;
-  background: white;
-  padding: 5px 10px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.account-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Account Item (Selectable) */
+.account-item {
+  background: #f1f1f1;
+  padding: 6px 10px;
   border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  border: 2px solid transparent;
+}
+
+/* Selected Account */
+.account-item.selected {
+  background: #007bff;
+  color: white;
+  border: 2px solid #0056b3;
+}
+
+/* Hover Effect */
+.account-item:hover {
+  background: #e0e0e0;
+  transform: scale(1.05);
 }
 
 /* MetaMask Status + Disconnect */
@@ -177,9 +201,18 @@ body {
   border-radius: 6px;
 }
 
+/* Identity Name */
 .identity-name {
   flex: 1;
   font-weight: bold;
+}
+
+/* Identity Address Styling */
+.identity-address {
+  font-size: 14px;
+  font-weight: normal;
+  color: #555;
+  margin: 4px;
 }
 
 /* Identity Actions */
@@ -293,6 +326,21 @@ body {
   margin: 8px 0;
   border: 1px solid #ccc;
   border-radius: 6px;
+  font-size: 16px;
+}
+
+/* Styling for the react-select dropdown */
+.modal-content .select-dropdown {
+  width: 100%;
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.modal-content.select-dropdown > div {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  padding-right: 0px;
   font-size: 16px;
 }
 

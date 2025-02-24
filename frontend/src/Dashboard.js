@@ -5,6 +5,8 @@ import "./App.css";
 
 const Dashboard = ({ contract, accounts, disconnectWallet }) => {
   const [identities, setIdentities] = useState([]);
+  const [filteredIdentities, setFilteredIdentities] = useState([]);
+  const [selectedAccounts, setSelectedAccounts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [viewingIdentity, setViewingIdentity] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -12,17 +14,44 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
 
   useEffect(() => {
     if (contract && accounts.length > 0) {
-      loadIdentities(accounts[0]);
+      setSelectedAccounts(accounts); // Select all accounts by default
+      loadIdentities(accounts);
     }
   }, [contract, accounts]);
 
-  const loadIdentities = async (userAddress) => {
+  const loadIdentities = async (userAccounts) => {
     try {
-      const response = await axios.get(`http://localhost:5001/identity/get-identities/${userAddress}`);
-      console.log("Identities:", response.data.credentials);
-      setIdentities(response.data.credentials);
+      console.log("Fetching all identities for accounts:", userAccounts);
+      const queryParams = userAccounts.map(acc => `accounts[]=${encodeURIComponent(acc)}`).join("&");
+      const response = await axios.get(`http://localhost:5001/identity/get-all-identities?${queryParams}`);
+
+      const formattedIdentities = response.data.credentials.flatMap((accountData, index) =>
+        accountData.map(cred => ({ ...cred, userAddress: userAccounts[index] }))
+      );
+
+      console.log("Identities:", formattedIdentities);
+      setIdentities(formattedIdentities);
+      setFilteredIdentities(formattedIdentities);
     } catch (error) {
       showNotification("Error fetching identities.", "error");
+    }
+  };
+
+  // Toggle account selection
+  const toggleAccountSelection = (account) => {
+    const updatedSelection = selectedAccounts.includes(account)
+      ? selectedAccounts.filter(acc => acc !== account) // Remove account if already selected
+      : [...selectedAccounts, account]; // Add account if not selected
+
+    setSelectedAccounts(updatedSelection);
+    updateFilteredIdentities(updatedSelection);
+  };
+
+  const updateFilteredIdentities = (activeAccounts) => {
+    if (activeAccounts.length === 0) {
+      setFilteredIdentities([]);
+    } else {
+      setFilteredIdentities(identities.filter(identity => activeAccounts.includes(identity.userAddress)));
     }
   };
 
@@ -34,7 +63,7 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
     try {
       const { identity } = revokePopup;
       await axios.post("http://localhost:5001/identity/revoke-identity", {
-        userAddress: accounts[0],
+        userAddress: identity.userAddress,
         firstName: identity.firstName,
         lastName: identity.lastName,
         dob: identity.dob,
@@ -42,7 +71,7 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
         idNumber: identity.idNumber,
       });
       showNotification(`Identity for ${identity.firstName} ${identity.lastName} revoked successfully.`, "success");
-      loadIdentities(accounts[0]);
+      loadIdentities(accounts);
     } catch (error) {
       showNotification("Error revoking identity.", "error");
     } finally {
@@ -60,17 +89,25 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
 
   const handleIdentitySuccess = (message) => {
     showNotification(message, "success");
-    loadIdentities(accounts[0]);
+    loadIdentities(accounts);
   };
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <div className="account-info">
-          <span className="account-label">Account</span>
-          <span className="account-address">
-            {accounts[0].slice(0, 6)}...{accounts[0].slice(-4)}
-          </span>
+        <div className="account-selection">
+          <span className="account-label">Accounts Connected:</span>
+          <ul className="account-list">
+            {accounts.map((acc) => (
+              <li
+                key={acc}
+                className={`account-item ${selectedAccounts.includes(acc) ? "selected" : ""}`}
+                onClick={() => toggleAccountSelection(acc)}
+              >
+                {acc.slice(0, 6)}...{acc.slice(-4)}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="meta-actions">
           <span className="metamask-status">Connected - MetaMask</span>
@@ -84,11 +121,13 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
           <button className="add-identity-btn" onClick={() => setShowModal(true)}>+</button>
         </div>
 
-        {identities.length > 0 ? (
+        {filteredIdentities.length > 0 ? (
           <ul className="identity-list">
-            {identities.map((id, index) => (
+            {filteredIdentities.map((id, index) => (
               <li key={index} className="identity-item">
-                <span className="identity-name">{id.firstName} {id.lastName}</span>
+                <span className="identity-name">
+                  {id.firstName} {id.lastName} <span className="identity-address">{id.userAddress.slice(0, 6)}...{id.userAddress.slice(-4)}</span>
+                </span>
                 <div className="identity-actions">
                   <button className="view-btn" onClick={() => setViewingIdentity(id)}>View</button>
                   <button className="revoke-btn" onClick={() => confirmRevoke(id)}>Revoke</button>
@@ -104,7 +143,7 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
       {showModal && (
         <IdentityForm
           contract={contract}
-          account={accounts[0]}
+          accounts={accounts}
           onClose={() => setShowModal(false)}
           onSuccess={handleIdentitySuccess}
         />
@@ -113,7 +152,6 @@ const Dashboard = ({ contract, accounts, disconnectWallet }) => {
       {viewingIdentity && (
         <IdentityForm
           contract={contract}
-          account={accounts[0]}
           onClose={() => setViewingIdentity(null)}
           readOnly={true}
           identity={viewingIdentity}

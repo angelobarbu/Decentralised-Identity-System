@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Select from "react-select";
+import countryList from "react-select-country-list";
 import "./App.css";
 
-const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false, identity = {} }) => {
+const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false, identity = {} }) => {
+  const [userAddress, setUserAddress] = useState(identity.userAddress || "");
   const [firstName, setFirstName] = useState(identity.firstName || "");
   const [lastName, setLastName] = useState(identity.lastName || "");
   const [dob, setDob] = useState(identity.dob || "");
@@ -11,10 +14,24 @@ const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false,
   const [status, setStatus] = useState("");
   const [revalidatePopup, setRevalidatePopup] = useState({ show: false, formData: null });
 
+  // Get list of all countries
+  const nationalityOptions = countryList().getData();
+
+  // Account dropdown options
+  let accountOptions = [];
+  if (!readOnly) {
+    accountOptions = accounts.map(acc => ({
+      value: acc,
+      label: `${acc.slice(0, 7)}...${acc.slice(-5)}`
+    }));
+  } else {
+    accountOptions = [{ value: identity.userAddress, label: `${identity.userAddress.slice(0, 7)}...${identity.userAddress.slice(-5)}` }];
+  }
+
   const issueIdentity = async (revalidate = false) => {
     try {
       const formData = {
-        userAddress: account,
+        userAddress,
         firstName,
         lastName,
         dob,
@@ -30,7 +47,6 @@ const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false,
       console.log("Identity issued:", response.data, response.data.revalidationRequired);
 
       if (response.data.message === "Credential exists but is revoked. Set revalidate to true to revalidate it.") {
-        // Show the revalidation popup if required
         setRevalidatePopup({ show: true, formData });
         return;
       }
@@ -38,7 +54,6 @@ const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false,
       setStatus("Identity issued successfully!");
       onSuccess("Identity issued successfully!");
       onClose();
-
     } catch (error) {
       setStatus("Error issuing identity.");
     }
@@ -48,6 +63,16 @@ const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false,
     <div className="modal">
       <div className="modal-content">
         <h2>{readOnly ? "View Identity" : "Add Identity"}</h2>
+        <Select
+          options={accountOptions}
+          getOptionLabel={(e) => e.label}
+          getOptionValue={(e) => e.value}
+          placeholder="Select Issuer Account"
+          value={accountOptions.find(option => option.value === userAddress)}
+          onChange={(selectedOption) => setUserAddress(selectedOption.value)}
+          isDisabled={readOnly}
+          className={`select-dropdown ${readOnly ? "unselectable" : ""}`}
+        />
         <input
           type="text"
           placeholder="First Name"
@@ -72,14 +97,19 @@ const IdentityForm = ({ contract, account, onClose, onSuccess, readOnly = false,
           readOnly={readOnly}
           className={readOnly ? "unselectable" : ""}
         />
-        <input
-          type="text"
-          placeholder="Nationality"
-          value={nationality}
-          onChange={(e) => setNationality(e.target.value)}
-          readOnly={readOnly}
-          className={readOnly ? "unselectable" : ""}
+        
+        {/* Nationality Dropdown */}
+        <Select
+          options={nationalityOptions}
+          getOptionLabel={(e) => e.label}
+          getOptionValue={(e) => e.value}
+          placeholder="Select Nationality"
+          value={nationalityOptions.find((option) => option.label === nationality) || null}
+          onChange={(selectedOption) => setNationality(selectedOption.label)}
+          isDisabled={readOnly}
+          className={`select-dropdown ${readOnly ? "unselectable" : ""}`}
         />
+
         <input
           type="text"
           placeholder="ID Number"

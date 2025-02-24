@@ -15,7 +15,7 @@ const App = () => {
       setIdentityContract(contract);
       setConnected(true);
       localStorage.setItem("connected", "true");
-      localStorage.setItem("account", accounts[0]);
+      localStorage.setItem("accounts", accounts);
     } catch (error) {
       alert("Error connecting to MetaMask: " + error.message);
     }
@@ -25,15 +25,15 @@ const App = () => {
     setAccounts([]);
     setConnected(false);
     localStorage.removeItem("connected");
-    localStorage.removeItem("account");
+    localStorage.removeItem("accounts");
     window.location.reload();
   };
 
   useEffect(() => {
     const isConnected = localStorage.getItem("connected");
-    const storedAccount = localStorage.getItem("account");
+    const storedAccounts = localStorage.getItem("accounts");
 
-    if (isConnected === "true" && storedAccount) {
+    if (isConnected === "true" && storedAccounts.length > 0) {
       const reconnect = async () => {
         try {
           const { contract, accounts } = await getBlockchain();

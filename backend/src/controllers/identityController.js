@@ -17,6 +17,19 @@ class IdentityController {
   }
 
 
+  async getAllIdentities(req, res, next) {
+    try {
+      console.log("Received request to get all identities for accounts:", req.query.accounts);
+
+      const credentials = await IdentityService.getAllIdentities(req.query.accounts);
+
+      res.json({ success: true, credentials });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
   async issueCredential(req, res, next) {
     try {
       const { userAddress, firstName, lastName, dob, nationality, idNumber, revalidate } = req.body;
