@@ -13,12 +13,10 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
   const [nationality, setNationality] = useState(identity.nationality || "");
   const [idNumber, setIdNumber] = useState(identity.idNumber || "");
   const [status, setStatus] = useState("");
-  const [revalidatePopup, setRevalidatePopup] = useState({ show: false, formData: null });
+  const [errors, setErrors] = useState({});
 
-  // Get list of all countries
   const nationalityOptions = countryList().getData();
 
-  // Account dropdown options
   let accountOptions = [];
   if (!readOnly) {
     accountOptions = accounts.map(acc => ({
@@ -29,27 +27,67 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
     accountOptions = [{ value: identity.userAddress, label: `${identity.userAddress.slice(0, 6)}...${identity.userAddress.slice(-4)}` }];
   }
 
-  const handleIssueIdentity = async (revalidate = false) => {
+  // Validation functions
+  const validateForm = () => {
+    let newErrors = {};
+
+    // Ethereum Address Validation
+    if (!userAddress) {
+      newErrors.userAddress = "User address is required.";
+    } else if (!/^0x[a-fA-F0-9]{40}$/.test(userAddress)) {
+      newErrors.userAddress = "Invalid Ethereum address.";
+    }
+
+    // Name Validation
+    if (!firstName) {
+      newErrors.firstName = "First name is required.";
+    } else if (!/^[A-Za-z]+(([ '-][A-Za-z]+)*)$/.test(firstName)) {
+      newErrors.firstName = "Invalid first name format.";
+    }
+  
+    if (!lastName) {
+      newErrors.lastName = "Last name is required.";
+    } else if (!/^[A-Za-z]+(([ '-][A-Za-z]+)*)$/.test(lastName)) {
+      newErrors.lastName = "Invalid last name format.";
+    }
+
+    // Date of Birth Validation (Must be at least 18 years old)
+    if (!dob) {
+      newErrors.dob = "Date of birth is required.";
+    } else {
+      const birthDate = new Date(dob);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      if (age < 18 || birthDate > today) {
+        newErrors.dob = "Must be at least 18 years old.";
+      }
+    }
+
+    // Nationality Validation
+    if (!nationality) {
+      newErrors.nationality = "Nationality is required.";
+    }
+
+    // ID Number Validation (Alphanumeric, 5-20 characters)
+    if (!idNumber) {
+      newErrors.idNumber = "ID number is required.";
+    } else if (!/^[a-zA-Z0-9]{5,20}$/.test(idNumber)) {
+      newErrors.idNumber = "ID number must be 5-20 alphanumeric characters.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleIssueIdentity = async () => {
+    if (!validateForm()) return;
+
     try {
-      const formData = {
-        userAddress,
-        firstName,
-        lastName,
-        dob,
-        nationality,
-        idNumber,
-        revalidate
-      };
+      const formData = { userAddress, firstName, lastName, dob, nationality, idNumber };
 
       console.log("Issuing identity:", formData);
       const response = await issueIdentity(formData);
       console.log("Identity issued:", response.data);
-
-      // Handle revalidation scenario
-      if (response.data.message === "Credential exists but is revoked. Set revalidate to true to revalidate it.") {
-        setRevalidatePopup({ show: true, formData });
-        return;
-      }
 
       showNotification(setStatus, "Identity issued successfully!", "success");
       onSuccess("Identity issued successfully!");
@@ -75,6 +113,7 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
           isDisabled={readOnly}
           className={`select-dropdown ${readOnly ? "unselectable" : ""}`}
         />
+        {errors.userAddress && <p className="error-message">{errors.userAddress}</p>}
 
         {/* Nationality Dropdown */}
         <Select
@@ -87,6 +126,7 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
           isDisabled={readOnly}
           className={`select-dropdown ${readOnly ? "unselectable" : ""}`}
         />
+        {errors.nationality && <p className="error-message">{errors.nationality}</p>}
 
         {/* Identity Fields */}
         <input
@@ -97,6 +137,8 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
           readOnly={readOnly}
           className={readOnly ? "unselectable" : ""}
         />
+        {errors.firstName && <p className="error-message">{errors.firstName}</p>}
+
         <input
           type="text"
           placeholder="Last Name"
@@ -105,6 +147,8 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
           readOnly={readOnly}
           className={readOnly ? "unselectable" : ""}
         />
+        {errors.lastName && <p className="error-message">{errors.lastName}</p>}
+
         <input
           type="date"
           placeholder="Date of Birth"
@@ -113,6 +157,7 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
           readOnly={readOnly}
           className={readOnly ? "unselectable" : ""}
         />
+        {errors.dob && <p className="error-message">{errors.dob}</p>}
 
         <input
           type="text"
@@ -122,28 +167,15 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
           readOnly={readOnly}
           className={readOnly ? "unselectable" : ""}
         />
+        {errors.idNumber && <p className="error-message">{errors.idNumber}</p>}
 
         {/* Form Buttons */}
         <div className="form-buttons">
-          {!readOnly && <button className="submit-btn" onClick={() => handleIssueIdentity(false)}>Submit</button>}
+          {!readOnly && <button className="submit-btn" onClick={handleIssueIdentity}>Submit</button>}
           <button className="close-btn" onClick={onClose}>Close</button>
         </div>
 
         {status && <p className="status-message">{status}</p>}
-
-        {/* Revalidation Popup */}
-        {revalidatePopup.show && (
-          <div className="modal">
-            <div className="modal-content">
-              <h2>Identity Already Exists</h2>
-              <p>The identity <strong>{revalidatePopup.formData.firstName} {revalidatePopup.formData.lastName}</strong> was previously revoked. Do you want to revalidate it?</p>
-              <div className="popup-buttons">
-                <button className="confirm-revalidate-btn" onClick={() => handleIssueIdentity(true)}>Revalidate</button>
-                <button className="cancel-btn" onClick={() => setRevalidatePopup({ show: false, formData: null })}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

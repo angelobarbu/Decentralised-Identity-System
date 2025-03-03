@@ -366,6 +366,28 @@ body {
   margin-top: 20px;
 }
 
+/* Error Message Styling */
+.error-message {
+  color: #d32f2f;  /* Red color for error */
+  font-size: 14px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  padding-left: 5px;
+  font-weight: bold;
+}
+
+input.unselectable,
+.select-dropdown.unselectable {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+input:invalid,
+.select-dropdown:invalid {
+  border: 1px solid #d32f2f;
+}
+
+
 /* Submit Button */
 .submit-btn {
   background: #007bff;
