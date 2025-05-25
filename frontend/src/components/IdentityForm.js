@@ -3,7 +3,7 @@ import Select from "react-select";
 import countryList from "react-select-country-list";
 import { issueIdentity } from "../services/identityService";
 import { showNotification } from "../utils/notifications";
-import "../styles.css";
+import RevalidatePopup from "./RevalidatePopup";
 
 const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false, identity = {} }) => {
   const [userAddress, setUserAddress] = useState(identity.userAddress || "");
@@ -14,6 +14,8 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
   const [idNumber, setIdNumber] = useState(identity.idNumber || "");
   const [status, setStatus] = useState("");
   const [errors, setErrors] = useState({});
+  const [revalidatePopup, setRevalidatePopup] = useState({ show: false, message: "", formData: null, showRevalidate: false });
+  
 
   const nationalityOptions = countryList().getData();
 
@@ -79,15 +81,26 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleIssueIdentity = async () => {
+  const handleIssueIdentity = async (revalidate = false) => {
     if (!validateForm()) return;
 
     try {
-      const formData = { userAddress, firstName, lastName, dob, nationality, idNumber };
+      const formData = { userAddress, firstName, lastName, dob, nationality, idNumber, revalidate };
 
       console.log("Issuing identity:", formData);
       const response = await issueIdentity(formData);
       console.log("Identity issued:", response.data);
+
+      // Handle revalidation scenario
+      if (response.data.message === "Credential exists but is revoked. Set revalidate to true to revalidate it.") {
+        setRevalidatePopup({ show: true, message: `The identity ${formData.firstName} ${formData.lastName} exists but was revoked. Do you want to revalidate it?`, formData, showRevalidate: true });
+        return;
+      }
+
+      if (response.data.message === "Credential already exists and is valid") {
+        setRevalidatePopup({ show: true, message: `The identity ${formData.firstName} ${formData.lastName} already exists and is valid.`, formData: null, showRevalidate: false });
+        return;
+      }
 
       showNotification(setStatus, "Identity issued successfully!", "success");
       onSuccess("Identity issued successfully!");
@@ -171,11 +184,19 @@ const IdentityForm = ({ contract, accounts, onClose, onSuccess, readOnly = false
 
         {/* Form Buttons */}
         <div className="form-buttons">
-          {!readOnly && <button className="submit-btn" onClick={handleIssueIdentity}>Submit</button>}
+        {!readOnly && <button className="submit-btn" onClick={() => handleIssueIdentity(false)}>Submit</button>}
           <button className="close-btn" onClick={onClose}>Close</button>
         </div>
 
         {status && <p className="status-message">{status}</p>}
+
+        {/* Revalidation Popup */}
+        <RevalidatePopup
+          show={revalidatePopup.show}
+          message={revalidatePopup.message}
+          onClose={() => setRevalidatePopup({ show: false, message: "", formData: null, showRevalidate: false })}
+          onRevalidate={revalidatePopup.showRevalidate ? () => handleIssueIdentity(true) : null}
+        />
       </div>
     </div>
   );

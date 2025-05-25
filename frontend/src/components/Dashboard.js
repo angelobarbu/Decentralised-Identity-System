@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { fetchIdentities, revokeIdentity } from "../services/identityService";
 import IdentityForm from "./IdentityForm";
 import { showNotification } from "../utils/notifications";
-import "../styles.css";
 
 
 const Dashboard = ({ contract, accounts, disconnectWallet }) => {

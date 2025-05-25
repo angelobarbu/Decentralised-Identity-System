@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { BlockchainContext } from "./contexts/BlockchainContext";
 import Dashboard from "./components/Dashboard";
-import "./styles.css";
 
 const App = () => {
   const blockchain = useContext(BlockchainContext) || {}; // Prevents undefined error

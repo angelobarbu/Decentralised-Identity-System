@@ -120,9 +120,15 @@ class IdentityService {
     } catch (error) {
 
       // Credential already exists but is revoked
-      const revertMessage = "Credential exists but is revoked. Set revalidate to true to revalidate it.";
-      if (error.data?.reason === revertMessage) {
-        return { message: revertMessage };
+      const revalidateMessage = "Credential exists but is revoked. Set revalidate to true to revalidate it.";
+      if (error.data?.reason === revalidateMessage) {
+        return { message: revalidateMessage };
+      }
+
+      // Credential already exists and is valid
+      const existsMessage = "Credential already exists and is valid";
+      if (error.data?.reason === existsMessage) {
+        return { message: existsMessage };
       }
 
       console.error("Error in identityService.issueCredential:", error);
