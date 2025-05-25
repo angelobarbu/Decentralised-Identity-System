@@ -40,6 +40,50 @@ class IdentityService {
   }
 
 
+
+  async getAllIdentities(accounts) {
+    try {
+      if (!accounts || !Array.isArray(accounts) || accounts.length === 0) {
+        throw new Error("Invalid or missing user accounts.");
+      }
+
+      const allCredentials = await Promise.all(
+        accounts.map(async (userAddress) => {
+          const credentials = await identityContract.methods.getValidCredentials(userAddress).call();
+          console.log(`Fetched credentials for ${userAddress}:`, credentials);
+
+          const decryptedIdentities = credentials.map((cred) => {
+            try {
+              const bytes = crypto.AES.decrypt(cred.dataHash, secretKey);
+              const decryptedData = JSON.parse(bytes.toString(crypto.enc.Utf8));
+
+              return {
+                credentialId: cred.credentialId,
+                issuer: cred.issuer,
+                valid: cred.valid,
+                ...decryptedData,
+              };
+
+            } catch (err) {
+              console.error("Decryption failed for:", cred.dataHash);
+              return { credentialId: cred.credentialId, issuer: cred.issuer, valid: cred.valid };
+            }
+          });
+
+          return decryptedIdentities;
+        })
+      );
+
+      return allCredentials;
+
+    } catch (error) {
+      console.error("Error in identityService.getAllIdentities:", error);
+      throw error;
+    }
+  }
+
+
+
   async issueCredential({ userAddress, firstName, lastName, dob, nationality, idNumber, revalidate }) {
     try {
 
@@ -76,9 +120,15 @@ class IdentityService {
     } catch (error) {
 
       // Credential already exists but is revoked
-      const revertMessage = "Credential exists but is revoked. Set revalidate to true to revalidate it.";
-      if (error.data?.reason === revertMessage) {
-        return { message: revertMessage };
+      const revalidateMessage = "Credential exists but is revoked. Set revalidate to true to revalidate it.";
+      if (error.data?.reason === revalidateMessage) {
+        return { message: revalidateMessage };
+      }
+
+      // Credential already exists and is valid
+      const existsMessage = "Credential already exists and is valid";
+      if (error.data?.reason === existsMessage) {
+        return { message: existsMessage };
       }
 
       console.error("Error in identityService.issueCredential:", error);

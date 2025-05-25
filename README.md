@@ -209,7 +209,6 @@ There is a plan for further development, depending on the priority. At the curre
 
 #### High
 1. Redefinition of Issue Credential Form(proper field validation, adding more relevant fields, identity document processing);
-2. Handling multiple MetaMask Digital Wallets on a session.
 
 #### Medium
 1. Develop Verification Interface for third-party validation requests;
@@ -220,3 +219,4 @@ There is a plan for further development, depending on the priority. At the curre
 
 #### Low
 1. Implementing handling multiple wallet platforms.
+2. Identity type separation based on age ( < 18 ).

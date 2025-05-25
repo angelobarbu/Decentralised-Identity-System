@@ -44,7 +44,7 @@ const getBlockchain = async () => {
     const accounts = await web3.eth.getAccounts();
 
     console.log("Smart Contract Address:", deployedNetwork.address);
-    console.log("User Account:", accounts[0]);
+    console.log("User Accounts:", accounts);
 
     return { web3, contract, accounts };
   } catch (error) {
