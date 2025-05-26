@@ -3,17 +3,30 @@
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [High-Level Software Architecture](#high---level-software-architecture)
-3. [Prerequisites](#prerequisites)
-4. [Project Structure](#project-structure)
-5. [Project Components](#project-components)
+- [Decentralised-Identity-System](#decentralised-identity-system)
+    - [© Angelo-Gabriel Barbu - angelo.barbu123@gmail.com - 2025](#-angelo-gabriel-barbu---angelobarbu123gmailcom---2025)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [High-Level Software Architecture](#high-level-software-architecture)
+  - [Prerequisites](#prerequisites)
+  - [Project Structure](#project-structure)
+  - [Project Components](#project-components)
     - [Ganache](#ganache)
+      - [Usage Instructions](#usage-instructions)
     - [Smart Contracts](#smart-contracts)
+      - [Contract Structure](#contract-structure)
+      - [Setting up](#setting-up)
+      - [Testing](#testing)
     - [Business Logic](#business-logic)
+      - [Setting up](#setting-up-1)
+  - [**NOTE:** Change `DEPLOYED_CONTRACT_ADDRESS` each time you reset Ganache.](#note-change-deployed_contract_address-each-time-you-reset-ganache)
     - [Visual Components](#visual-components)
-6. [How to Install](#how-to-install)
-7. [Development Plan](#development-plan)
+      - [Setting up](#setting-up-2)
+  - [How to Install](#how-to-install)
+  - [Development Plan](#development-plan)
+      - [High](#high)
+      - [Medium](#medium)
+      - [Low](#low)
 
 <br>
 
@@ -94,6 +107,11 @@ The `Smart Contracts` module contains the implementation of the Smart Contract f
 ![](/resources/Identity_Contract_EN.png "Identity Smart Contract Structure")
 
 #### Setting up
+Install dependencies
+```bash
+npm install
+```
+
 Compile and migrate smart contracts:
 ```bash
 truffle compile
@@ -139,7 +157,7 @@ DEPLOYED_CONTRACT_ADDRESS=<DEPLOYED_CONTRACT_ADDRESS>
 OCR_API_KEY=<OCR_API_KEY>
 SECRET_KEY=<SECRET_KEY>
 ```
-
+**NOTE:** Change `DEPLOYED_CONTRACT_ADDRESS` each time you reset Ganache.
 ---
 
 <br>
