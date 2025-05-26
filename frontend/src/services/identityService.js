@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5001/identity";
+const API_BASE_URL = "http://localhost:5007/identity";
 
 export const fetchIdentities = async (accounts) => {
   const queryParams = accounts.map(acc => `accounts[]=${encodeURIComponent(acc)}`).join("&");

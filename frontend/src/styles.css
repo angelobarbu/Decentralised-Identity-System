@@ -491,3 +491,83 @@ input:invalid,
 .cancel-btn:active {
   transform: scale(0.95);     /* Button press effect */
 }
+
+/* === chooser ============================== */
+
+.chooser-container {
+  max-width: 600px;
+  margin: 3rem auto;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.chooser-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #1d1d1f;
+}
+
+.identity-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid transparent;
+  background: #f5f9ff;
+  border-radius: 8px;
+  padding: 0.9rem 1.2rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+}
+
+.identity-card:hover {
+  background: #e9f1ff;
+}
+
+.identity-card.selected {
+  border-color: #007bff;
+  background: #e6f0ff;
+}
+
+.identity-name {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #1d1d1f;
+}
+
+.identity-address {
+  font-size: 0.9rem;
+  color: #6b6b6b;
+  margin-left: 0.25rem;
+}
+
+.continue-btn {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.75rem 0;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #007bff;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.continue-btn:disabled {
+  background: #c8d6f0;
+  cursor: default;
+}
+
+.continue-btn:not(:disabled):hover {
+  background: #006ae6;
+}
+
+/* keep body background similar to dashboard */
+body {
+  background: #e8f1ff;
+}

@@ -2,15 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import WrappedChooser from './Chooser';
 import { BlockchainProvider } from "./contexts/BlockchainContext";
 import reportWebVitals from './reportWebVitals';
 import './styles.css';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
+
+// Decide which root component to render based on the URL
+const isChooser = window.location.pathname.startsWith("/chooser");
+const RootComponent = isChooser ? WrappedChooser : App;
+
 root.render(
   <React.StrictMode>
     <BlockchainProvider>
-      <App />
+      <RootComponent />
     </BlockchainProvider>
   </React.StrictMode>
 );
